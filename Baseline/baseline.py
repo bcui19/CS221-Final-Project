@@ -28,51 +28,64 @@ def cleanDataset(dataList):
 	return dataMatrix
 
 
+def logRunHelper(logReg, train, test, foldNum):
+	logReg.runClassification(train, test, foldNum)
+
+
 class logisticRegression:
 	def __init__(self, inputDataset, classDataset):
 		self.classData = classDataset
 		self.dataSet = inputDataset
 		self.learningRate = 0.00001
 		self.epochMax = 100
-		self.splitDataset()
+		self.splitDataset(10)
 
-	def splitDataset(self):
-		self.classList = [0,0]
-		k_fold = KFold(n_splits = 10)
+	def splitDataset(self, n_splits):
+		self.classList = [[0,0]*n_splits]
+		k_fold = KFold(n_splits = n_splits)
 
 		self.nWorkers = 48
-		pool = Pool(process = self.nWorkers)
+		pool = Pool(processes = self.nWorkers)
 
 		count = 0 
+		resuDict = {}
 		for train_index,test_index in k_fold.split(self.dataSet):
-			self.train = [self.dataSet[i] for i in train_index]
+			train = [self.dataSet[i] for i in train_index]
 			# print "train size is: ", len(self.train)
-			self.test = [self.dataSet[i] for i in test_index]
+			test = [self.dataSet[i] for i in test_index]
 			# print "test size is: ", len(self.test)
-			self.runClassification()
-			self.classList[0] += self.totCorr0
-			self.classList[1] += self.totCorr1
+			tempResult = pool.apply_async(logRunHelper, args = (self, train, test, count))
 
+			count += 1
+			resuDict[count] = tempResult
 
-			
+		for resu in resuDict:
+			resuDict[resu].get()
+
+		pool.close()
 
 		self.totList = [sum([int(term==0) for term in self.actualClassification], sum([int(term==1) for term in self.actualClassification]))]
 		
 		print "probability this is correct is: ", float(sum(self.classList))/len(self.dataSet)
-		print "false positive rate is: ", float(self.totList[0] - self.classList[0])/self.totList[0], " number of positive datasets is: ", self.totList[0]
-		print "false negative rate is: ", float(self.totList[1] - self.classList[1])/self.totList[1], "number of negative datsets is: ", self.totList[1]
+		print "false positive rate is: ", float(self.totList[0] - sum([self.classList[i][0] for i in range(len(self.classList))]))/self.totList[0], " number of positive datasets is: ", self.totList[0]
+		print "false negative rate is: ", float(self.totList[1] - sum([self.classList[i][1] for i in range(len(self.classList))]))/self.totList[1], "number of negative datsets is: ", self.totList[1]
 
-	def runClassification(self):
-		self.runLogReg(self.learningRate, self.epochMax)
+	def runClassification(self, train, test, foldNum):
+		beta = self.runLogReg(self.learningRate, self.epochMax, train)
 		self.classificationTable = []
 		self.actualClassification = []
-		self.classifyData(self.test)
+		self.classifyData(test, beta)
 		self.getActualClassification(self.classData)
-		self.getComparison()
+		
+		tupleResu = self.getComparison()
+		self.classList[foldNum][0] += tupleResu[0]
+		self.classList[foldNum][0] += tupleResu[1]
+			# return (totCorr0, totCorr1, tot0, tot1)
 
-	def classifyData(self, dataSet):
+
+	def classifyData(self, dataSet, beta):
 		for dataPoint in dataSet:
-			probability = self.calcLogVal(dataPoint, self.beta, 0)
+			probability = self.calcLogVal(dataPoint, beta, 0)
 			if probability > 0.5:
 				self.classificationTable.append(1)
 			else: 
@@ -83,31 +96,31 @@ class logisticRegression:
 			classification = 1 if classPoint.condition == "Renal Clear Cell Carcinoma" else 0
 			self.actualClassification.append(classification)
 
-	def runLogReg(self, learningRate, epochMax):
+	def runLogReg(self, learningRate, epochMax, train):
 		def resetGradient():
-			return [0] * len(self.train[0])
-		beta = [0] * len(self.train[0])
+			return [0] * len(train[0])
+		beta = [0] * len(train[0])
 		gradient = beta[:]
 		for epochNum in range(epochMax):
 			gradient = resetGradient()
 			print "epochNum is: ", epochNum
-			print "number of features is: ", len(self.train[0])
+			print "number of features is: ", len(train[0])
 			
-			for index in range(len(self.train)):
+			for index in range(len(train)):
 
-				logisticValue = self.calcLogVal(self.train[index], beta, 0)
+				logisticValue = self.calcLogVal(train[index], beta, 0)
 				resultantClassification = 1 if self.classData[index].condition == "Renal Clear Cell Carcinoma" else 0
 
-				for j in range(len(self.train[0])):
+				for j in range(len(train[0])):
 					if j == 0:
 						gradient[j] += (resultantClassification - logisticValue)
 						continue
-					gradient[j] += self.train[index][j-1]*(resultantClassification - logisticValue)
+					gradient[j] += train[index][j-1]*(resultantClassification - logisticValue)
 
 			for update in range(len(beta)):
 				beta[update] += learningRate * gradient[update]
 		
-		self.beta = beta[:]
+		return beta[:]
 
 
 
@@ -115,14 +128,14 @@ class logisticRegression:
 		z = sum(beta[i] * float(dataPoint[i]) for i in range(len(beta)))
 		return 1/(1 + math.e**(-z))
 
-	def getComparison(self):
-		self.totCorr0 = 0
-		self.totCorr1 = 0
-		self.tot0 = 0
-		self.tot1 = 0
-		for i in range(len(self.test)):
-			if self.classificationTable[i] == self.actualClassification[i] and self.classificationTable[i] == 0:
-				self.totCorr0 += 1
+	def getComparison(self, classificationTable, actualClassification, test):
+		totCorr0 = 0
+		totCorr1 = 0
+		tot0 = 0
+		tot1 = 0
+		for i in range(len(test)):
+			if classificationTable[i] == actualClassification[i] and classificationTable[i] == 0:
+				totCorr0 += 1
 			elif self.classificationTable[i] == self.actualClassification[i]:
 				self.totCorr1 += 1
 			if self.classificationTable[i] == 0:
@@ -135,6 +148,7 @@ class logisticRegression:
 			print "false positive rate is: ", float(self.tot0 - self.totCorr0)/self.tot0, " number of positive datasets is: ", self.tot0
 		if self.tot1:
 			print "false negative rate is: ", float(self.tot1 - self.totCorr1)/self.tot1, "number of negative datsets is: ", self.tot1
+		return (totCorr0, totCorr1, tot0, tot1)
 
 
 
