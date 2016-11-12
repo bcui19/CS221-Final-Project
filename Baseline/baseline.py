@@ -9,16 +9,22 @@ import os
 import loadData as ld
 import math
 import random 
+from sklearn.model_selection import KFold, cross_val_score
+from sklearn.preprocessing import MinMaxScaler
+from multiprocessing import Pool
+from multiprocessing import Process
 
 
 def cleanDataset(dataList):
+	normalize = MinMaxScaler(feature_range=(-1.0,1.0))
+
 	dataMatrix = []
 	for currClass in dataList:
 		featureList = []
 		currDict = currClass.featureDict
 		for key in currDict:
 			featureList.append(currDict[key])
-		dataMatrix.append(featureList[:])
+		dataMatrix.append(normalize.fit_transform(featureList)[:]) # need to normalize to make sure everything is legit
 	return dataMatrix
 
 
@@ -26,38 +32,42 @@ class logisticRegression:
 	def __init__(self, inputDataset, classDataset):
 		self.classData = classDataset
 		self.dataSet = inputDataset
-		self.learningRate = 0.01
-		self.epochMax = 10
+		self.learningRate = 0.00001
+		self.epochMax = 100
 		self.splitDataset()
-		self.runClassification()
 
 	def splitDataset(self):
-		self.train = []
-		self.test = []
-		self.testClass = []
-		self.validation = []
-		self.validationClass = []
-		for i in range(len(self.dataSet)):
-			randomGenerated = random.randint(0, 10)
-			if randomGenerated >= 7:
-				self.test.append(self.dataSet[i][:])
-				self.testClass.append(self.classData[i])
-			elif randomGenerated >=1:
-				self.train.append(self.dataSet[i][:])
-			else: 
-				self.validation.append(self.dataSet[i][:])
-				self.validationClass.append(self.classData[i])
-		print "test length is: ", len(self.test)
-		print "train length is: ", len(self.train)
+		self.classList = [0,0]
+		k_fold = KFold(n_splits = 10)
+
+		self.nWorkers = 48
+		pool = Pool(process = self.nWorkers)
+
+		count = 0 
+		for train_index,test_index in k_fold.split(self.dataSet):
+			self.train = [self.dataSet[i] for i in train_index]
+			# print "train size is: ", len(self.train)
+			self.test = [self.dataSet[i] for i in test_index]
+			# print "test size is: ", len(self.test)
+			self.runClassification()
+			self.classList[0] += self.totCorr0
+			self.classList[1] += self.totCorr1
 
 
+			
+
+		self.totList = [sum([int(term==0) for term in self.actualClassification], sum([int(term==1) for term in self.actualClassification]))]
+		
+		print "probability this is correct is: ", float(sum(self.classList))/len(self.dataSet)
+		print "false positive rate is: ", float(self.totList[0] - self.classList[0])/self.totList[0], " number of positive datasets is: ", self.totList[0]
+		print "false negative rate is: ", float(self.totList[1] - self.classList[1])/self.totList[1], "number of negative datsets is: ", self.totList[1]
 
 	def runClassification(self):
 		self.runLogReg(self.learningRate, self.epochMax)
 		self.classificationTable = []
 		self.actualClassification = []
 		self.classifyData(self.test)
-		self.getActualClassification(self.testClass)
+		self.getActualClassification(self.classData)
 		self.getComparison()
 
 	def classifyData(self, dataSet):
@@ -96,29 +106,35 @@ class logisticRegression:
 
 			for update in range(len(beta)):
 				beta[update] += learningRate * gradient[update]
+		
 		self.beta = beta[:]
+
+
 
 	def calcLogVal(self, dataPoint, beta, z):
 		z = sum(beta[i] * float(dataPoint[i]) for i in range(len(beta)))
 		return 1/(1 + math.e**(-z))
 
 	def getComparison(self):
-		totCorr0 = 0
-		totCorr1 = 0
-		tot0 = 0
-		tot1 = 0
+		self.totCorr0 = 0
+		self.totCorr1 = 0
+		self.tot0 = 0
+		self.tot1 = 0
 		for i in range(len(self.test)):
 			if self.classificationTable[i] == self.actualClassification[i] and self.classificationTable[i] == 0:
-				totCorr0 += 1
+				self.totCorr0 += 1
 			elif self.classificationTable[i] == self.actualClassification[i]:
-				totCorr1 += 1
+				self.totCorr1 += 1
 			if self.classificationTable[i] == 0:
-				tot0 += 1
+				self.tot0 += 1
 			else:
-				tot1 += 1
-		print "probability this is correct is: ", float(totCorr0 + totCorr1)/len(self.test)
-		print "false positive rate is: ", float(tot0 - totCorr0)/tot0
-		print "false negative rate is: ", float(tot1 - totCorr1)/tot1
+				self.tot1 += 1
+
+		print "probability this is correct is: ", float(self.totCorr0 + self.totCorr1)/len(self.test)
+		if self.tot0:
+			print "false positive rate is: ", float(self.tot0 - self.totCorr0)/self.tot0, " number of positive datasets is: ", self.tot0
+		if self.tot1:
+			print "false negative rate is: ", float(self.tot1 - self.totCorr1)/self.tot1, "number of negative datsets is: ", self.tot1
 
 
 
