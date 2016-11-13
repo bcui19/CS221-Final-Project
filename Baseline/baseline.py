@@ -37,14 +37,14 @@ class logisticRegression:
 		self.classData = classDataset
 		self.dataSet = inputDataset
 		self.learningRate = 0.00001
-		self.epochMax = 2
+		self.epochMax = 1000
 		self.splitDataset(10)
 
 	def splitDataset(self, n_splits):
 		self.classList = [[0,0]*n_splits]
 		k_fold = KFold(n_splits = n_splits)
 
-		self.nWorkers = 1
+		self.nWorkers = 10
 		pool = Pool(processes = self.nWorkers)
 
 		count = 0 
@@ -125,12 +125,12 @@ class logisticRegression:
 					# print "len of gradient is: ", len(gradient)
 					# print "len of train is: ", len(train[index])
 					gradient[j] += train[i][j-1]*(resultantClassification - logisticValue)
-				print "after gradient update"
-			print "after training"
+				# print "after gradient update"
+			# print "after training"/
 
 			for update in range(len(beta)):
 				beta[update] += learningRate * gradient[update]
-			print "updating beta"
+			# print "updating beta"
 		
 		return beta[:]
 

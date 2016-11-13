@@ -10,7 +10,7 @@ class runLSTM:
         return 1/(1+np.exp(-val))
 
     def dsigmoid(self, val):
-        
+        return val*()
 
 
 def main():
