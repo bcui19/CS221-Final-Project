@@ -53,7 +53,12 @@ def importDataset():
 				continue
 			
 			addFeature(row)
-			# if counter > 5:
-				# break
 			counter += 1
 	return sampleList
+
+def main():
+	returnList = importDataset()
+	print returnList[0]
+
+# if __name__ == "__main__":
+	# main()

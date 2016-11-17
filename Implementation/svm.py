@@ -22,6 +22,9 @@ class runSVM():
 		self.splitDataset(10)
 
 	def splitDataset(self, n_splits):
+		self.classificationList = [0]*4 #first two are prediction second two indices are actual
+
+
 		k_fold = KFold(n_splits = n_splits)
 		self.nWorkers = 10
 		pool = Pool(processes = self.nWorkers)
@@ -30,6 +33,8 @@ class runSVM():
 		resuDict = {}
 		count = 0
 		for train_index, test_index in k_fold.split(self.dataset):
+			print test_index
+			print "n_splits is: ", n_splits
 			train = [self.dataset[i] for i in train_index]
 			test = [self.dataset[i] for i in test_index]
 
@@ -37,25 +42,39 @@ class runSVM():
 
 			count += 1
 
+		print "total values predicted to be 0 are: ", self.classificationList[0], " total values actually 0 are: ", self.classificationList[2]
+		print "accuracy for 0 is: ", self.classificationList[0]*1.0/self.classificationList[2]
+		print "total values predicted to be 1 are: ", self.classificationList[1], " total values actually 1 are: ", self.classificationList[3]
+		print "accuracy for 1 is: ", self.classificationList[1]*1.0/self.classificationList[3]
+
 
 	def runClassification(self, train, test, foldNum, train_index, test_index):
-		classificationTable = self.getActualClassification(train_index)
+		classificationTable = self.getActualClassification(train_index, False)
 
-		clf = svm.SVC()
+		clf = svm.SVC(tol = 10**-5, max_iter = 10000)
 		clf.fit(train, classificationTable)
 
-		print clf.predict(test)
+		self.prediction = clf.predict(test)
+		print "predicted type is: ", type(self.prediction)
+
+		self.getActualClassification(test_index, True)
 
 
 
 
-
-	def getActualClassification(self, test_index):
+	def getActualClassification(self, test_index, testBool):
 		actualClassification = []
+		counter = 0
 		for i, classPoint in enumerate(self.classSet):
 			if i in test_index:
 				classification = 1 if classPoint.condition == "Renal Clear Cell Carcinoma" else 0
 				actualClassification.append(classification)
+				if testBool:
+					print "patient name is: ", classPoint.patientName
+					print "actual classification is: ", classification
+					self.classificationList[classification] += 1 if self.prediction[counter] == classification else 0
+					self.classificationList[2+classification] += 1
+					counter += 1
 		return actualClassification
 
 

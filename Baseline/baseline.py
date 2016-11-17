@@ -16,7 +16,7 @@ from multiprocessing import Process
 
 
 def cleanDataset(dataList):
-	normalize = MinMaxScaler(feature_range=(-1.0,1.0))
+	# normalize = MinMaxScaler(feature_range=(-1.0,1.0))
 
 	dataMatrix = []
 	for currClass in dataList:
@@ -24,7 +24,8 @@ def cleanDataset(dataList):
 		currDict = currClass.featureDict
 		for key in currDict:
 			featureList.append(currDict[key])
-		dataMatrix.append(normalize.fit_transform(featureList)[:]) # need to normalize to make sure everything is legit
+		# dataMatrix.append(normalize.fit_transform(featureList)[:]) # need to normalize to make sure everything is legit
+		dataMatrix.append(featureList[:])
 	return dataMatrix
 
 
@@ -163,12 +164,15 @@ class logisticRegression:
 		return (totCorr0, totCorr1, tot0, tot1)
 
 
-
+def main():
+	dataSet = ld.importDataset()
+	currSet = dataSet[:]
+	cleanedSet = cleanDataset(currSet)
+	print dataSet[0].patientName
+	print dataSet[0].printShit()
+	# logisticRegression(cleanedSet, currSet)
 
 
 
 if __name__ == "__main__":
-	dataSet = ld.importDataset()
-	currSet = dataSet[:]
-	cleanedSet = cleanDataset(currSet)
-	logisticRegression(cleanedSet, currSet)
+	main()
