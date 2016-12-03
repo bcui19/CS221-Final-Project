@@ -51,7 +51,7 @@ class runSVM():
 	def runClassification(self, train, test, foldNum, train_index, test_index):
 		classificationTable = self.getActualClassification(train_index, False)
 
-		clf = svm.SVC(tol = 10**-5, max_iter = 10000)
+		clf = svm.SVC()
 		clf.fit(train, classificationTable)
 
 		self.prediction = clf.predict(test)
@@ -85,11 +85,12 @@ def loadAndClean():
 	dataset = ld.importDataset()
 	currSet = dataset[:]
 	cleanedSet = baseline.cleanDataset(currSet)
+	print currSet
 	return cleanedSet, currSet
 
 def main():
 	cleanedSet, classSet = loadAndClean()
-	runSVM(cleanedSet, classSet)
+	# runSVM(cleanedSet, classSet)
 
 
 
