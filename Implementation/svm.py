@@ -15,6 +15,9 @@ from sklearn.model_selection import KFold, cross_val_score
 from multiprocessing import Pool 
 from multiprocessing import Process
 
+CANCER_TAG = "relapse"
+
+
 class runSVM():
 	def __init__(self, dataset, classSet):
 		self.dataset = dataset
@@ -42,10 +45,13 @@ class runSVM():
 
 			count += 1
 
-		print "total values predicted to be 0 are: ", self.classificationList[0], " total values actually 0 are: ", self.classificationList[2]
-		print "accuracy for 0 is: ", self.classificationList[0]*1.0/self.classificationList[2]
-		print "total values predicted to be 1 are: ", self.classificationList[1], " total values actually 1 are: ", self.classificationList[3]
-		print "accuracy for 1 is: ", self.classificationList[1]*1.0/self.classificationList[3]
+		try:
+			print "total values predicted to be 0 are: ", self.classificationList[0], " total values actually 0 are: ", self.classificationList[2]
+			print "accuracy for 0 is: ", self.classificationList[0]*1.0/self.classificationList[2]
+			print "total values predicted to be 1 are: ", self.classificationList[1], " total values actually 1 are: ", self.classificationList[3]
+			print "accuracy for 1 is: ", self.classificationList[1]*1.0/self.classificationList[3]
+		except ZeroDivisionError:
+			return
 
 
 	def runClassification(self, train, test, foldNum, train_index, test_index):
@@ -67,7 +73,7 @@ class runSVM():
 		counter = 0
 		for i, classPoint in enumerate(self.classSet):
 			if i in test_index:
-				classification = 1 if classPoint.condition == "Renal Clear Cell Carcinoma" else 0
+				classification = 1 if classPoint.condition == CANCER_TAG else 0
 				actualClassification.append(classification)
 				if testBool:
 					print "patient name is: ", classPoint.patientName

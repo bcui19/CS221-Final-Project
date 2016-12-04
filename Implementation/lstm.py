@@ -32,7 +32,7 @@ class runLSTM:
 	def initLSTM(self):
 		self.num_Epochs = 50
 		self.n_classes = 2 #number of possible classifications
-		self.batch_size = 1
+		self.batch_size = 1 #pushing one training point through at a time
 		self.chunk_size = 4277
 		self.n_chunks = 1
 		self.rnn_size = 128

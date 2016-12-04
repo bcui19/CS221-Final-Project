@@ -1,0 +1,45 @@
+real	0m14.514s
+user	0m13.344s
+sys	0m0.794s
+
+Normal dataset LogReg
+total values predicted to be 0 are:  16  total values actually 0 are:  18
+accuracy for 0 is:  0.857142857143
+total values predicted to be 1 are:  46  total values actually 1 are:  49
+accuracy for 1 is:  0.938775510204
+
+
+
+
+real	0m11.802s
+user	0m10.555s
+sys	0m0.785s
+
+Normal dataset SVM
+total values predicted to be 0 are:  16  total values actually 0 are:  21
+accuracy for 0 is:  0.761904761905
+total values predicted to be 1 are:  49  total values actually 1 are:  49
+accuracy for 1 is:  1.0
+
+
+real	0m1.677s
+user	0m1.308s
+sys	0m0.292s
+
+Filtered LogReg
+total values predicted to be 0 are:  16  total values actually 0 are:  18
+accuracy for 0 is:  0.888888888889
+total values predicted to be 1 are:  52  total values actually 1 are:  52
+accuracy for 1 is:  1.0
+
+
+real	0m1.533s
+user	0m1.123s
+sys	0m0.291s
+
+
+Filtered SVM
+total values predicted to be 0 are:  16  total values actually 0 are:  18
+accuracy for 0 is:  0.888888888889
+total values predicted to be 1 are:  52  total values actually 1 are:  52
+accuracy for 1 is:  1.0
