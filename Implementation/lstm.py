@@ -11,12 +11,15 @@ sys.path.append("./../Baseline")
 import loadData as ld
 import baseline
 import csv
+import os
 
+LOSS_FILE = "./../Loss Files/LstmLoss.csv"
 
 class runLSTM:
 	def __init__(self, featureSet, classificationSet):
 		self.featureSet = featureSet
 		self.classSet = classificationSet
+		self.Dir = os.path.dirname(__file__)
 
 
 
@@ -24,10 +27,11 @@ class runLSTM:
 
 		self.initLSTM()
 		self.train_neural_network(self.x)
+		self.writeLoss()
 
 	def initLSTM(self):
-		self.num_Epochs = 3
-		self.n_classes = 2
+		self.num_Epochs = 50
+		self.n_classes = 2 #number of possible classifications
 		self.batch_size = 1
 		self.chunk_size = 4277
 		self.n_chunks = 1
@@ -38,7 +42,6 @@ class runLSTM:
 
 
 	def recurrent_neural_network(self, x):
-		print 'here'
 		layer = {'weights':tf.Variable(tf.random_normal([self.rnn_size,self.n_classes])),
 			 'biases':tf.Variable(tf.random_normal([self.n_classes]))}
 
@@ -46,13 +49,11 @@ class runLSTM:
 		x = tf.reshape(x, [-1, self.chunk_size])
 		x = tf.split(0, self.n_chunks, x)
 
-		print 'got to the middle l o l '
 
 		lstm_cell = rnn_cell.BasicLSTMCell(self.rnn_size)
 		outputs, states = rnn.rnn(lstm_cell, x, dtype = tf.float32)
 		output = tf.matmul(outputs[-1], layer['weights']) + layer['biases']
 
-		print 'returning'
 		return output
 
 
@@ -73,6 +74,7 @@ class runLSTM:
 				epoch_loss = 0
 				print 'epoch num is: ', epoch
 
+				#basically a really bad way to go about 
 				i = 0
 				while i < len(self.featureSet):
 					start = i
@@ -100,6 +102,12 @@ class runLSTM:
 			print 'Accuracy is: ', accuracy.eval({x: np.array(self.featureSet).reshape(-1, self.n_chunks, self.chunk_size), self.y: self.classifications})
 
 
+	def writeLoss(self):
+		filename = os.path.join(self.Dir, LOSS_FILE)
+		file = open(filename, 'w')
+		writer = csv.writer(file, quoting = csv.QUOTE_ALL)
+		writer.writerow(self.loss)
+
 
 	def getActualClassification(self):
 		actualClassification = []
@@ -115,6 +123,7 @@ class runLSTM:
 
 
 def main():
+	print sys.version
 	dataSet = ld.importDataset()
 	currSet = dataSet[:]
 	cleanedSet = baseline.cleanDataset(currSet)
