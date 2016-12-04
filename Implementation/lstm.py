@@ -33,7 +33,7 @@ class runLSTM:
 		self.num_Epochs = 50
 		self.n_classes = 2 #number of possible classifications
 		self.batch_size = 1 #pushing one training point through at a time
-		self.chunk_size = 4277
+		self.chunk_size = 2445
 		self.n_chunks = 1
 		self.rnn_size = 128
 
@@ -113,7 +113,7 @@ class runLSTM:
 		actualClassification = []
 		counter = 0
 		for i, classPoint in enumerate(self.classSet):
-			classification = [1, 0] if classPoint.condition == "Renal Clear Cell Carcinoma" else [0,1]
+			classification = [1, 0] if classPoint.condition == "relapse" else [0,1]
 			actualClassification.append(classification)
 		print actualClassification
 		return actualClassification

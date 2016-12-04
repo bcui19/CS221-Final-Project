@@ -61,6 +61,7 @@ class runSVM():
 		clf.fit(train, classificationTable)
 
 		self.prediction = clf.predict(test)
+		print self.prediction
 		print "predicted type is: ", type(self.prediction)
 
 		self.getActualClassification(test_index, True)
@@ -74,13 +75,16 @@ class runSVM():
 		for i, classPoint in enumerate(self.classSet):
 			if i in test_index:
 				classification = 1 if classPoint.condition == CANCER_TAG else 0
+				print classPoint.condition
 				actualClassification.append(classification)
 				if testBool:
 					print "patient name is: ", classPoint.patientName
-					print "actual classification is: ", classification
+					print "classification is: ", classification
+					print "actual classification is: ", self.prediction[counter]
 					self.classificationList[classification] += 1 if self.prediction[counter] == classification else 0
 					self.classificationList[2+classification] += 1
 					counter += 1
+
 		return actualClassification
 
 
@@ -96,7 +100,7 @@ def loadAndClean():
 
 def main():
 	cleanedSet, classSet = loadAndClean()
-	# runSVM(cleanedSet, classSet)
+	runSVM(cleanedSet, classSet)
 
 
 
