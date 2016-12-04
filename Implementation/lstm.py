@@ -33,7 +33,7 @@ class runLSTM:
 		self.num_Epochs = 50
 		self.n_classes = 2 #number of possible classifications
 		self.batch_size = 1 #pushing one training point through at a time
-		self.chunk_size = 2445
+		self.chunk_size = len(self.featureSet[0])
 		self.n_chunks = 1
 		self.rnn_size = 128
 
@@ -58,10 +58,31 @@ class runLSTM:
 
 
 	def train_neural_network(self, x):
+		def test_neural_network():
+
+			remissionFeatures = [featurePoint for i, featurePoint in enumerate(self.featureSet) if self.classifications[i] == [1,0]]
+			remissionClassification = [classpoint for i, classpoint in enumerate(self.classifications) if self.classifications[i] == [1,0]]
+			noneFeatures = [featurePoint for i, featurePoint in enumerate(self.featureSet) if self.classifications[i] != [1,0]]
+			noneClassification = [featurePoint for i, featurePoint in enumerate(self.classifications) if self.classifications[i] != [1,0]]
+
+			print len(remissionFeatures)
+			print len(noneFeatures)
+
+			print 'class1 accuracy is: ', sess.run(accuracy, feed_dict= {x: np.array(remissionFeatures).reshape(-1, self.n_chunks, self.chunk_size), self.y: remissionClassification})
+			print 'class0 accuracy is: ', sess.run(accuracy, feed_dict= {x: np.array(noneFeatures).reshape(-1, self.n_chunks, self.chunk_size), self.y: noneClassification})
+
+
+
+
+
 		self.loss = []
 		prediction = self.recurrent_neural_network(x)
 		print prediction
 		cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(prediction, self.y))
+
+		correct_pred = tf.equal(tf.argmax(prediction,1), tf.argmax(self.y,1))
+		accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+
 
 		optimizer = tf.train.AdamOptimizer().minimize(cost)
 
@@ -74,7 +95,7 @@ class runLSTM:
 				epoch_loss = 0
 				print 'epoch num is: ', epoch
 
-				#basically a really bad way to go about 
+				#basically a really bad way to go about pushing all of the datapoints through the RNN
 				i = 0
 				while i < len(self.featureSet):
 					start = i
@@ -90,6 +111,9 @@ class runLSTM:
 					_,c = sess.run([optimizer, cost], feed_dict = {x: batch_x, self.y: batch_y})
 					epoch_loss += c
 					i += 1
+					acc = sess.run(accuracy, feed_dict={self.x: batch_x, self.y: batch_y})
+
+
 					# print "i is: ", i
 				self.loss.append(epoch_loss)
 
@@ -97,9 +121,22 @@ class runLSTM:
 
 			correct = tf.equal(tf.argmax(prediction, 1), tf.argmax(self.classifications, 1))
 
-			accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
+			currAcc = tf.reduce_mean(tf.cast(correct, 'float'))
 
-			print 'Accuracy is: ', accuracy.eval({x: np.array(self.featureSet).reshape(-1, self.n_chunks, self.chunk_size), self.y: self.classifications})
+
+			# remissionFeatures = [featurePoint for i, featurePoint in enumerate(self.featureSet) if self.classifications[i] == [1,0]]
+			# remissionClassification = [classpoint for i, classpoint in enumerate(self.classifications) if self.classifications[i] == [1,0]]
+			# noneFeatures = [featurePoint for i, featurePoint in enumerate(self.featureSet) if self.classifications[i] != [1,0]]
+			# noneClassification = [featurePoint for i, featurePoint in enumerate(self.classifications) if self.classifications[i] != [1,0]]
+
+			# print len(remissionFeatures)
+			# print len(noneFeatures)
+
+			# print 'class1 accuracy is: ', sess.run(accuracy, feed_dict= {x: np.array(remissionFeatures).reshape(-1, self.n_chunks, self.chunk_size), self.y: remissionClassification})
+			# print 'class0 accuracy is: ', sess.run(accuracy, feed_dict= {x: np.array(noneFeatures).reshape(-1, self.n_chunks, self.chunk_size), self.y: noneClassification})
+
+			test_neural_network()
+			# print 'Accuracy is: ', sess.run(accuracy, {x: np.array(self.featureSet[1:]).reshape(-1, self.n_chunks, self.chunk_size), self.y: self.classifications[1:]})
 
 
 	def writeLoss(self):

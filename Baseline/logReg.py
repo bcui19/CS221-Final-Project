@@ -28,7 +28,7 @@ class runLogistic(svm.runSVM):
 	def runClassification(self, train, test, foldNum, train_index, test_index):
 		classificationTable = self.getActualClassification(train_index, False)
 
-		clf = linear_model.LogisticRegression()
+		clf = linear_model.LogisticRegression(class_weight = 'balanced')
 		clf.fit(train, classificationTable)
 
 		predicted = clf.predict(test)

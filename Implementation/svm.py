@@ -9,6 +9,7 @@ import baseline
 import numpy as np
 import copy
 import math
+import random
 from sklearn.model_selection import KFold, cross_val_score
 
 
@@ -19,9 +20,11 @@ CANCER_TAG = "relapse"
 
 
 class runSVM():
-	def __init__(self, dataset, classSet):
-		self.dataset = dataset
-		self.classSet = classSet
+	def __init__(self, trainDataset, trainClassSet):#, validationDataset, validationClass):
+		self.dataset = trainDataset
+		self.classSet = trainClassSet
+		# self.validationData = validationDataset
+		# self.validationClass = validationClass
 		self.splitDataset(10)
 
 	def splitDataset(self, n_splits):
@@ -36,8 +39,8 @@ class runSVM():
 		resuDict = {}
 		count = 0
 		for train_index, test_index in k_fold.split(self.dataset):
-			print test_index
-			print "n_splits is: ", n_splits
+			# print test_index
+			# print "n_splits is: ", n_splits
 			train = [self.dataset[i] for i in train_index]
 			test = [self.dataset[i] for i in test_index]
 
@@ -57,7 +60,7 @@ class runSVM():
 	def runClassification(self, train, test, foldNum, train_index, test_index):
 		classificationTable = self.getActualClassification(train_index, False)
 
-		clf = svm.SVC()
+		clf = svm.SVC(class_weight = 'balanced')
 		clf.fit(train, classificationTable)
 
 		self.prediction = clf.predict(test)
@@ -75,7 +78,6 @@ class runSVM():
 		for i, classPoint in enumerate(self.classSet):
 			if i in test_index:
 				classification = 1 if classPoint.condition == CANCER_TAG else 0
-				print classPoint.condition
 				actualClassification.append(classification)
 				if testBool:
 					print "patient name is: ", classPoint.patientName
@@ -87,6 +89,28 @@ class runSVM():
 
 		return actualClassification
 
+# #forcefully generating a validation set
+# #takes in the classData and the featureset and resturns a reduced version 
+# #plus a validation set
+# def createValidation(dataset, classSet):
+# 	def generateValidation(indicies):
+# 		return [feature for i, feature in enumerate(dataset) if i in indicies], [currClass for i, currClass in enumerate(classSet) if i in indicies]
+	
+# 	def generateTrain(indicies):
+# 		return [feature for i, feature in enumerate(dataset) if i not in indicies], [currClass for i, currClass in enumerate(classSet) if i not in indicies]
+
+# 	relapseIndex = [i for i, currClass in enumerate(classSet) if currClass.condition == CANCER_TAG]
+# 	nonIndex = [i for i, currClass in enumerate(classSet) if currClass.condition != CANCER_TAG]
+# 	validationRelapse_Indicies = [index for i, index in enumerate(relapseIndex) if i < 3]
+# 	validationNone_Indicies = [index for i, index in enumerate(nonIndex) if i < len(dataset)/10-3]
+# 	validationIndicies = validationRelapse_Indicies + validationNone_Indicies
+
+# 	trainData, trainClass = generateTrain(validationIndicies)
+# 	validationData, validationClass = generateValidation(validationIndicies)
+
+# 	return trainData, trainClass, validationData, validationClass
+
+
 
 
 
@@ -95,11 +119,12 @@ def loadAndClean():
 	dataset = ld.importDataset()
 	currSet = dataset[:]
 	cleanedSet = baseline.cleanDataset(currSet)
-	print currSet
+
 	return cleanedSet, currSet
 
 def main():
 	cleanedSet, classSet = loadAndClean()
+	# trainData, trainClass, validationData, validationClass = createValidation(cleanedSet, classSet)
 	runSVM(cleanedSet, classSet)
 
 
