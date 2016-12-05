@@ -1,7 +1,7 @@
 import os
 import csv
 
-DATAPATH = "./../Datasets/Remission Dataset/GSE13576_series_matrix.csv"
+DATAPATH = "./../Datasets/Remission Dataset/GSE13576_series_matrix_heavilyFiltered.csv"
 
 class bioStructure:
 	def __init__(self, patientName):

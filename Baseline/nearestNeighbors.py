@@ -31,20 +31,15 @@ class nearestNeighbors(svm.runSVM):
 				for classification in neighborClass:
 					currDict[classification] += 1
 				self.prediction.append(1 if currDict[1] > currDict[0] else 0)
-			
+
 
 
 		# classificationTable = self.getActualClassification(train_index, False)
 
-		nbrs = nn(n_neighbors=3, algorithm = 'ball_tree').fit(train)
+		nbrs = nn(n_neighbors=5, algorithm = 'ball_tree').fit(train)
 		distances, indicies = nbrs.kneighbors(test)
 
 		getPrediction()
-
-		# clf = svm.SVC(class_weight = 'balanced')
-		# clf.fit(train, classificationTable)
-
-		# self.prediction = clf.predict(test)
 		print self.prediction
 		print "predicted type is: ", type(self.prediction)
 

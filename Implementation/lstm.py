@@ -124,19 +124,7 @@ class runLSTM:
 			currAcc = tf.reduce_mean(tf.cast(correct, 'float'))
 
 
-			# remissionFeatures = [featurePoint for i, featurePoint in enumerate(self.featureSet) if self.classifications[i] == [1,0]]
-			# remissionClassification = [classpoint for i, classpoint in enumerate(self.classifications) if self.classifications[i] == [1,0]]
-			# noneFeatures = [featurePoint for i, featurePoint in enumerate(self.featureSet) if self.classifications[i] != [1,0]]
-			# noneClassification = [featurePoint for i, featurePoint in enumerate(self.classifications) if self.classifications[i] != [1,0]]
-
-			# print len(remissionFeatures)
-			# print len(noneFeatures)
-
-			# print 'class1 accuracy is: ', sess.run(accuracy, feed_dict= {x: np.array(remissionFeatures).reshape(-1, self.n_chunks, self.chunk_size), self.y: remissionClassification})
-			# print 'class0 accuracy is: ', sess.run(accuracy, feed_dict= {x: np.array(noneFeatures).reshape(-1, self.n_chunks, self.chunk_size), self.y: noneClassification})
-
 			test_neural_network()
-			# print 'Accuracy is: ', sess.run(accuracy, {x: np.array(self.featureSet[1:]).reshape(-1, self.n_chunks, self.chunk_size), self.y: self.classifications[1:]})
 
 
 	def writeLoss(self):

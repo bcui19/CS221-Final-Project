@@ -1,0 +1,12 @@
+Logistic Regression: calculates the probability based on a set of features whether or not the current set of features will lead to remission or not.
+	- probabilistic
+SVM: Non probabilistic model that based on a set of features can assignn it to one of two classes, in our case has cancer or doesn't
+	- non-probabilistic
+
+SGD (stochastic gradient descent) - this is basically an SVM but what happened what I trained it with a perceptron loss function 
+	- i'm pretty sure the setting I used, 'elastic net' which helps bring feature sparsity so it basically weeds out bad features that might cause overfitting 
+
+K-Nearest Neighbors - looks at the nearest neighbors in the training set. Basically assumes that there will be things with similar features near each other.
+
+LSTM (Long short term memory network) - designed to avoid long term dependencies as found in recurrent neural networks
+	- RNNs are used in order to process arbitrary sequences of inputs
