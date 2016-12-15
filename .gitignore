@@ -2,10 +2,11 @@
 /Guidelines/
 /Tutorial/
 /Writeup
-
+/Figures
 
 *.pyc
 *.xlsx
 *.csv
 *.txt
 *.ppt
+*.png
