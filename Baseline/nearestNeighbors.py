@@ -40,10 +40,13 @@ class nearestNeighbors(svm.runSVM):
 		distances, indicies = nbrs.kneighbors(test)
 
 		getPrediction()
-		print self.prediction
+		print "predicted list is: ", self.prediction
 		print "predicted type is: ", type(self.prediction)
 
 		self.getActualClassification(test_index, True)
+
+		for patient in self.classSet:
+			print patient.condition == svm.CANCER_TAG
 
 
 

@@ -22,8 +22,9 @@ class runLasso(svm.runSVM):
 
 		print 'alpha vals are:', alphaVals
 
-		clf = GridSearchCV(linear_model.SGDClassifier(loss = 'perceptron', penalty = 'elasticnet', n_iter = 100, class_weight = 'balanced', learning_rate = 'optimal', verbose = False), alphaVals,
-			cv = 10, scoring = 'f1_macro')
+		# clf = GridSearchCV(linear_model.SGDClassifier(loss = 'perceptron', penalty = 'elasticnet', n_iter = 100, class_weight = 'balanced', learning_rate = 'optimal', verbose = False), alphaVals,
+			# cv = 10, scoring = 'f1_macro')
+		clf = linear_model.SGDClassifier(loss = 'hinge', penalty = 'elasticnet', class_weight = 'balanced', learning_rate = 'optimal')
 
 		clf.fit(train, classificationTable)
 

@@ -17,6 +17,7 @@ from multiprocessing import Pool
 from multiprocessing import Process
 
 CANCER_TAG = "relapse"
+# CANCER_TAG = "Renal Clear Cell Carcinoma"
 
 
 class runSVM():
@@ -64,12 +65,12 @@ class runSVM():
 		clf.fit(train, classificationTable)
 
 		self.prediction = clf.predict(test)
-		print self.prediction
+		print "predicted list is: ", self.prediction
 		print "predicted type is: ", type(self.prediction)
 
 		self.getActualClassification(test_index, True)
 
-		print clf.coef_
+		# print clf.coef_
 
 
 
@@ -83,8 +84,8 @@ class runSVM():
 				actualClassification.append(classification)
 				if testBool:
 					print "patient name is: ", classPoint.patientName
-					print "classification is: ", classification
-					print "actual classification is: ", self.prediction[counter]
+					print "actual classification is: ", classification
+					print "predicted classification is: ", self.prediction[counter]
 					self.classificationList[classification] += 1 if self.prediction[counter] == classification else 0
 					self.classificationList[2+classification] += 1
 					counter += 1

@@ -60,9 +60,9 @@ class runLogistic(svm.runSVM):
 
 		predicted = clf.predict(test)
 		self.prediction = clf.predict(test)
-		# print "predicted type is: ", type(self.prediction)
+		print "predicted type is: ", type(self.prediction)
 
-		# self.getActualClassification(test_index, True)
+		self.getActualClassification(test_index, True)
 
 		self.genes = clf.coef_
 		self.getImportantGenes()
