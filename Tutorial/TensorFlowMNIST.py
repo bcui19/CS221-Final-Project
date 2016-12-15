@@ -13,7 +13,7 @@ from tensorflow.python.ops import rnn, rnn_cell
 
 # Import MNIST data
 from tensorflow.examples.tutorials.mnist import input_data
-mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
+mnist = input_data.read_data_sets("data/", one_hot=True)
 
 '''
 To classify images using a recurrent neural network, we consider every image
@@ -22,8 +22,8 @@ handle 28 sequences of 28 steps for every sample.
 '''
 
 # Parameters
-learning_rate = 0.001
-training_iters = 100
+learning_rate = 0.0001
+training_iters = 1000000
 batch_size = 128
 display_step = 10
 
@@ -88,10 +88,10 @@ with tf.Session() as sess:
 	# Keep training until reach max iterations
 	while step * batch_size < training_iters:
 		batch_x, batch_y = mnist.train.next_batch(batch_size)
-		print (len(batch_x[0]))
-		print (len(batch_y[0]))
 		# Reshape data to get 28 seq of 28 elements
+		print ("previous shape is: ", batch_x.shape)
 		batch_x = batch_x.reshape((batch_size, n_steps, n_input))
+		print (batch_x.shape)
 		# Run optimization op (backprop)
 		sess.run(optimizer, feed_dict={x: batch_x, y: batch_y})
 		if step % display_step == 0:

@@ -1,7 +1,17 @@
 #all necessary tensorflow imports
 import numpy as np
 import tensorflow as tf
-from tensorflow.models.rnn import rnn, rnn_cell
+# from tensorflow.models.rnn import rnn, rnn_cell
+# import tf.nn.rnn_*
+# from tf.nn.rnn_* import rnn, rnn_cell
+# import tensorflow.models.rnn.rnn as rnn
+# import tensorflow.models.rnn.rnn_cell as rnn_cell
+
+from tensorflow.python.ops.rnn_cell import BasicLSTMCell
+
+from tensorflow.python.ops import rnn_cell
+from tensorflow.python.ops import rnn
+
 
 
 #my personal loading data imports
@@ -30,12 +40,13 @@ class runLSTM:
 		self.writeLoss()
 
 	def initLSTM(self):
-		self.num_Epochs = 50
+		self.num_Epochs = 50 # number of training iterations
 		self.n_classes = 2 #number of possible classifications
-		self.batch_size = 1 #pushing one training point through at a time
+		self.batch_size = 5 #pushing one training point through at a time
 		self.chunk_size = len(self.featureSet[0])
 		self.n_chunks = 1
-		self.rnn_size = 128
+		self.rnn_size = 256
+		self.learning_rate = 0.001
 
 		self.x = tf.placeholder('float', [None, self.n_chunks, self.chunk_size])
 		self.y = tf.placeholder('float', [None, self.n_classes])
@@ -84,7 +95,7 @@ class runLSTM:
 		accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 
 
-		optimizer = tf.train.AdamOptimizer().minimize(cost)
+		optimizer = tf.train.AdamOptimizer(learning_rate = self.learning_rate).minimize(cost)
 
 
 
@@ -97,12 +108,16 @@ class runLSTM:
 
 				#basically a really bad way to go about pushing all of the datapoints through the RNN
 				i = 0
-				while i < len(self.featureSet):
+				while i < len(self.featureSet)-4:
 					start = i
 					end = i + self.batch_size
 
+					# print "start is: ", start, " end is: ", end
 					batch_x = np.array([self.featureSet[start:end]])
 					batch_y = np.array(self.classifications[start:end])
+					# print batch_x.shape
+					# print np.array([self.featureSet]).shape
+					# print batch_y
 
 
 					batch_x = batch_x.reshape((self.batch_size, self.n_chunks, self.chunk_size))

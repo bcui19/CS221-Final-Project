@@ -2,7 +2,7 @@ import os
 import csv
 
 # DATAPATH = "./../Datasets/Kidney Cancer Dataset/GSE16449_series_matrix.csv"
-DATAPATH = "./../Datasets/Remission Dataset/GSE13576_series_matrix_heavilyFiltered.csv"
+DATAPATH = "./../Datasets/Remission Dataset/GSE13576_series_matrix_heavilyFiltered_Appended.csv"
 # DATAPATH = "./../Datasets/Remission Dataset/GSE13576_series_matrix_filtered.csv"
 
 class bioStructure:
