@@ -53,29 +53,28 @@ Our baseline is an implementation of K Nearest Neighbors. Our oracle is the fals
     This dataset contains 70 individuals with 34,731 gene expressions each. In addition, the dataset contains information of whether the sample comes from cancerous or benign kidney tissue. We use this dataset for the binary classification problem of cancerous versus benign.
     \subsubsection{GSE13576}
     This dataset contains 196 patients with 55,670 gene expressions each. In addition, the dataset contains information of whether the . We use this dataset for the binary classification problem of cancerous versus benign.
-    \subsubsection{ANOTHER ONE}
-    fill me in
+
     \subsection{Normalization}
 Microarray data has variation in the amount of each sample inputted into the chip. This leads to a systematic error where one sample has greater expression across all the genes. Thus, we apply a normalization step to each sample. To do this, we sum the expression of the genes for each sample. We then divide each expression by this sum. This scales all the samples to have the same total expression, reducing  noise in the experiment.
     \section{Methods}
-	Our methodology consists of running K Nearest Neighbors (KNN) for our baseline and then we implement logistic regression, stochastic gradient descent (SGD), support vector machines (SVMs), Multi-layer neural networks, and Long Short Term Memory (LSTMs).
+    Our methodology consists of running K Nearest Neighbors (KNN) for our baseline and then we implement logistic regression, stochastic gradient descent (SGD), support vector machines (SVMs), Multi-layer neural networks, and Long Short Term Memory (LSTMs).
     
     When training all models, we run 10-fold cross validation. We present the testing error for all such samples. 
 
-	\subsection{Sci-Kit Learn}
+    \subsection{Sci-Kit Learn}
     \subsubsection*{5.5.1 K Nearest Neighbors}
-    We run 5-NN on our dataset with the KNN package from scikit-learn. The algorithm was ran with a ball tree in order to get around deficiencies in KD-trees and brute force distances. 
+    We run 5-NN on our dataset with the KNN package from scikit-learn. We run the algorithm with a ball tree in order to get around deficiencies in KD-trees and brute force distances. 
     
-	\subsubsection*{5.1.2 Logistic Regression}
+    \subsubsection*{5.1.2 Logistic Regression}
     For our project we use logistic regression as the baseline for our projection. The logistic regression implementation is performed with the class weight flag turned onto 'balanced'. Thus the weight that each class adds in training is multiplied by the following constant:
     
     $$\frac{\textrm{num samples}}{\textrm{num classInstances}}$$
     
-    thus the weights within logistic regression are adjusted inversely proportional to the class frequencies. Overall, this allows for better classification, particularly with our datasets that are biased towards non-cancerous samples. 
+    Thus the weights within logistic regression are adjusted inversely proportional to the class frequencies. Overall, this allows for better classification, particularly with our datasets that are biased towards non-cancerous samples. 
     \subsubsection*{5.1.3 Support Vector Machines SVMs}
     We apply SVMs from the sklearn package with the same flag as in logistic regression, where every class was weighted by multiplying it by the constant
     
-	$$\frac{\textrm{num samples}}{\textrm{num classInstances}}$$
+    $$\frac{\textrm{num samples}}{\textrm{num classInstances}}$$
     
     \subsubsection*{5.1.4 Stochastic Gradient Descent}
     We also use stochastic gradient descent as a means to classify the datasets. Our implementation utilizes hinge loss, an elasticnet penalty, and a balanced class weight. The elasticnet parameter serves to try to optimize the combination of $l1$ and $l2$ as follows:
@@ -86,7 +85,7 @@ Microarray data has variation in the amount of each sample inputted into the chi
     
 
 
-	\subsection{Tensor Flow}
+    \subsection{Tensor Flow}
     fill me in
 
     \subsection{Preprocessing}
@@ -201,48 +200,69 @@ We ensure a minimum fold-change of 5. We tested different amounts of fold change
     We realized that perhaps the classification problem of cancerous versus benign is too trivial. This makes it very difficult to compare the results from different AI techniques, as all techniques will perform reasonably well. We also realize that our dataset does not contain enough samples to do proper training and validation of the model. Thus, in later analysis, we choose harder classification problems with larger datasets.
     
     \subsection{GSE13576: }
+    With this dataset we attempt to analyze whether or not a series of genes will lead to relapse in cancer. For this we filtered with two different cutoffs, fullchange = 5 and fullchange = 10, this resulted in 2444 and 557 genes, respectively. 
     
     \subsubsection{Results}
-	We present the classification results for our methodologies below:
+    We present the classification results for our methodologies below:
     
     \begin{center}
-    \includegraphics[width = 5in]{classificationResultsRemission}\\
-    \textbf{Figure 2:}
+    \includegraphics[width = 5in]{classificationRemissionHeavilyFiltered}\\
+    \textbf{Figure 2: Classification Accuracy}
     \end{center}
    
-  	From the classification results we notice that the filtration of features helps us ensure that the classifier doesn't just classify everything as cancerous. Additionally, we notice that an SVM in both the unfiltered and the filtered case performs best since we want to hit a point where we are accurately able to classify both cancerous and non-cancerous sets of genes.  
+    From the classification results we notice that the filtration of features helps us ensure that the classifier doesn't just classify everything as relapse. Additionally, we notice that an SVM in both the unfiltered and the filtered case enables the balance of false positive and false negative rates. However, we also note that when we ran the machine learning algorithms on an  more heavily filtered dataset that the results didn't improve significantly; we did notice that we got a slight increase in the true negative rate, but did not see improvement in the true positive rate. Overall, we noticed that there is an asymptotic ceiling to how much filtering the dataset actually helped us. 
    
     \subsubsection{Runtime}
-	We show the runtimes for the different algorithms below:
+    We show the runtimes for the different algorithms below:
     
     \begin{center}
-   	\includegraphics[width = 5in]{runTimeRemission}\\
-    \textbf{Figure 2: Runtimes for different methods on the GSE 13576 Dataset}
+    \includegraphics[width = 5in]{runTimeRemission}\\
+    \textbf{Figure 3: Runtimes for different methods on the GSE 13576 Dataset}
     \end{center}
     
     We observe that the runtimes for the algorithms are particularly consistent when comparing within the filtered or unfiltered dataset. However, when we compare between the datasets, we notice that the unfiltered dataset performs at over an order of magnitude worse than the filtered dataset
     
     \subsection{Precision and Recall}
-    fill me in
-    \subsection{Pathway Analysis}
-    fill me in
-
-	
+    The precision and recall for the various methodologies are presented below:
+    \begin{center}
+    \begin{tabular}{|c|c|c|}
+    \hline
+    method & precision & recall\\
+    \hline
+    SVM - heavily filtered & 0.4 & 0.8125\\
+    SGD - heavily filtered & 0.339285714 & 0.59375\\
+    Logistic Regression - heavily filtered & 0.5 & 0.59375\\
+    KNN - heavily filtered & 0.355932203 & 0.65625\\
+    SVM - filtered & 0.338235294 & 0.71875\\
+    SGD - filtered & 0.301587302    & 0.59375\\
+    Logistic Regression - filtered & 0.515151515 & 0.53125\\
+    KNN - filtered & 0.375 & 0.46875\\
+    SVM - all & 0.311111111 & 0.4375\\
+    Logistic regression - all & 0.375 & 0.1875\\
+    KNN - all & 0.25 & 0.0625\\
     
+    \hline
+    \end{tabular}\\
+    \vspace{0.1in}
+    \textbf{Table 7: Precision and Recall for various methodologies}
+    
+    \end{center}
+    
+    
+    
+    The F1 Scores for the various methodologies is plotted below:
+    
+    \begin{center}
+    \includegraphics[width = 5in]{F1Scores}\\
+    \textbf{Figure 4: F1 scores for various }
+    \end{center}
+
     \section{Error Analysis}
     fill me in
     
     
     
     \begin{thebibliography}{9}
-\bibitem{repmax}
-Epley, B. Poundage chart. \textit{Boyd Epley Workout}. Lincoln, NE: Body Enterprises, 1985. p. 86.
-
-\bibitem{jurgens} 
-Jurgens, David; McCorriston, James; Rhuts, Derek. 2015. \textit{An Analysis of Exercising Behavior in Online Populations}. McGill University Department of Computer Science. In \textit{Proceedings of ICWSM}.
- 
-\bibitem{sports} 
-United States Dept. of Labor. Bureau of Labor Statistics. \textit{Sports and Exercise}. Web. 14 Dec. 2016. https://www.bls.gov/spotlight/2008/\\sports/.
 
 \bibitem{obnibus}
 Barrett, Tanya. "Gene Expression Omnibus (GEO)." \textit{The NCBI Handbook [Internet]}. 2nd Edition. U.S. National Library of Medicine, 2013. Web. 14 Dec. 2016.
