@@ -1,17 +1,15 @@
 #all necessary tensorflow imports
 import numpy as np
 import tensorflow as tf
-# from tensorflow.models.rnn import rnn, rnn_cell
-# import tf.nn.rnn_*
-# from tf.nn.rnn_* import rnn, rnn_cell
-# import tensorflow.models.rnn.rnn as rnn
-# import tensorflow.models.rnn.rnn_cell as rnn_cell
 
 from tensorflow.python.ops.rnn_cell import BasicLSTMCell
 
 from tensorflow.python.ops import rnn_cell
 from tensorflow.python.ops import rnn
 
+
+#import stuff from sklearn
+from sklearn.utils import shuffle 
 
 
 #my personal loading data imports
@@ -31,25 +29,31 @@ class runLSTM:
 		self.classSet = classificationSet
 		self.Dir = os.path.dirname(__file__)
 
-
-
 		self.classifications = self.getActualClassification()
+		self.prepData()
+
 
 		self.initLSTM()
 		self.train_neural_network(self.x)
 		self.writeLoss()
 
 	def initLSTM(self):
-		self.num_Epochs = 50 # number of training iterations
+		self.num_Epochs = 10 # number of training iterations
 		self.n_classes = 2 #number of possible classifications
-		self.batch_size = 5 #pushing one training point through at a time
-		self.chunk_size = len(self.featureSet[0])
-		self.n_chunks = 1
+		self.batch_size = 4 #pushing one training point through at a time
+		self.chunk_size = len(self.featureSet[0])/18
+		self.n_chunks = 18
 		self.rnn_size = 256
 		self.learning_rate = 0.001
 
 		self.x = tf.placeholder('float', [None, self.n_chunks, self.chunk_size])
 		self.y = tf.placeholder('float', [None, self.n_classes])
+
+	
+	def prepData(self):
+		self.featureSet, self.classifications = shuffle(self.featureSet, self.classifications, random_state = 0)
+		print self.classifications
+
 
 
 	def recurrent_neural_network(self, x):
@@ -81,9 +85,6 @@ class runLSTM:
 
 			print 'class1 accuracy is: ', sess.run(accuracy, feed_dict= {x: np.array(remissionFeatures).reshape(-1, self.n_chunks, self.chunk_size), self.y: remissionClassification})
 			print 'class0 accuracy is: ', sess.run(accuracy, feed_dict= {x: np.array(noneFeatures).reshape(-1, self.n_chunks, self.chunk_size), self.y: noneClassification})
-
-
-
 
 
 		self.loss = []
@@ -125,9 +126,12 @@ class runLSTM:
 
 					_,c = sess.run([optimizer, cost], feed_dict = {x: batch_x, self.y: batch_y})
 					epoch_loss += c
-					i += 1
+					i += self.batch_size
 					acc = sess.run(accuracy, feed_dict={self.x: batch_x, self.y: batch_y})
 
+
+					if i + self.batch_size > len(self.featureSet) -4:
+						print "minibatch accuracy is: ", acc, " and loss is: ", c
 
 					# print "i is: ", i
 				self.loss.append(epoch_loss)
@@ -155,7 +159,6 @@ class runLSTM:
 		for i, classPoint in enumerate(self.classSet):
 			classification = [1, 0] if classPoint.condition == "relapse" else [0,1]
 			actualClassification.append(classification)
-		print actualClassification
 		return actualClassification
 
 

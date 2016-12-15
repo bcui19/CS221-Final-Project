@@ -60,7 +60,7 @@ def RNN(x, weights, biases):
 	x = tf.split(0, n_steps, x)
 
 	# Define a lstm cell with tensorflow
-	lstm_cell = rnn_cell.BasicLSTMCell(n_hidden, forget_bias=1.0)
+	lstm_cell = rnn_cell.BasicLSTMCell(n_hidden, forget_bias=0.5)
 
 	# Get lstm cell output
 	outputs, states = rnn.rnn(lstm_cell, x, dtype=tf.float32)
