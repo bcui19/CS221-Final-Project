@@ -69,6 +69,8 @@ class runSVM():
 
 		self.getActualClassification(test_index, True)
 
+		print clf.coef_
+
 
 
 

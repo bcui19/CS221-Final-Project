@@ -17,8 +17,9 @@ class bioStructure:
 		self.featureDict[featureName] = featureVal
 
 
-	def printShit(self):
-		print self.featureDict
+	def printGenes(self):
+		# print self.featureDict
+		return self.featureDict
 
 def importDataset():
 	#adds fetures to each class
