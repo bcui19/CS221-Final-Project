@@ -8,8 +8,9 @@ from tensorflow.python.ops import rnn_cell
 from tensorflow.python.ops import rnn
 
 
-#import stuff from sklearn
+#import modules from sklearn
 from sklearn.utils import shuffle 
+from sklearn.model_selection import KFold, cross_val_score
 
 
 #my personal loading data imports
@@ -34,26 +35,54 @@ class runLSTM:
 
 
 		self.initLSTM()
-		self.train_neural_network(self.x)
-		self.writeLoss()
+		self.runClassification(10)
+		self.writeLoss(10)
+
+
+
 
 	def initLSTM(self):
-		self.num_Epochs = 10 # number of training iterations
+		self.num_Epochs = 50 # number of training iterations
 		self.n_classes = 2 #number of possible classifications
-		self.batch_size = 4 #pushing one training point through at a time
-		self.chunk_size = len(self.featureSet[0])/18
-		self.n_chunks = 18
-		self.rnn_size = 256
+		self.batch_size = 3 #pushing one training point through at a time
+		self.chunk_size = len(self.featureSet[0])/31
+		self.n_chunks = 31
+		self.rnn_size = 128
 		self.learning_rate = 0.001
 
 		self.x = tf.placeholder('float', [None, self.n_chunks, self.chunk_size])
 		self.y = tf.placeholder('float', [None, self.n_classes])
 
-	
+
+	def runClassification(self, n_splits):
+		k_fold = KFold(n_splits = n_splits)
+
+		self.lossDict = {}
+
+		count = 0
+		self.classificationsList = [0] *4
+		prediction = self.recurrent_neural_network(self.x) #need to initizliae out here
+
+		for train_index, test_index in k_fold.split(self.featureSet):
+
+
+			self.train = [self.featureSet[i] for i in train_index]
+			self.trainGoal = [self.classifications[i] for i in train_index]
+			self.test = [self.featureSet[i] for i in test_index]
+			self.testGoal = [self.classifications[i] for i in test_index]
+
+			self.train_neural_network(self.x, prediction)
+
+			self.lossDict[count] = self.loss[:]
+
+			count += 1
+
+
+
+
 	def prepData(self):
 		self.featureSet, self.classifications = shuffle(self.featureSet, self.classifications, random_state = 0)
 		print self.classifications
-
 
 
 	def recurrent_neural_network(self, x):
@@ -72,24 +101,31 @@ class runLSTM:
 		return output
 
 
-	def train_neural_network(self, x):
+	def train_neural_network(self, x, prediction):
 		def test_neural_network():
 
-			remissionFeatures = [featurePoint for i, featurePoint in enumerate(self.featureSet) if self.classifications[i] == [1,0]]
-			remissionClassification = [classpoint for i, classpoint in enumerate(self.classifications) if self.classifications[i] == [1,0]]
-			noneFeatures = [featurePoint for i, featurePoint in enumerate(self.featureSet) if self.classifications[i] != [1,0]]
-			noneClassification = [featurePoint for i, featurePoint in enumerate(self.classifications) if self.classifications[i] != [1,0]]
+			remissionFeatures = [featurePoint for i, featurePoint in enumerate(self.test) if self.classifications[i] == [1,0]]
+			remissionClassification = [classpoint for i, classpoint in enumerate(self.testGoal) if self.classifications[i] == [1,0]]
+			noneFeatures = [featurePoint for i, featurePoint in enumerate(self.test) if self.classifications[i] != [1,0]]
+			noneClassification = [featurePoint for i, featurePoint in enumerate(self.testGoal) if self.classifications[i] != [1,0]]
 
-			print len(remissionFeatures)
-			print len(noneFeatures)
+			# print len(remissionFeatures)
+			# print len(noneFeatures)
 
-			print 'class1 accuracy is: ', sess.run(accuracy, feed_dict= {x: np.array(remissionFeatures).reshape(-1, self.n_chunks, self.chunk_size), self.y: remissionClassification})
-			print 'class0 accuracy is: ', sess.run(accuracy, feed_dict= {x: np.array(noneFeatures).reshape(-1, self.n_chunks, self.chunk_size), self.y: noneClassification})
+			self.classificationsList[0] += len(noneFeatures)
+			self.classificationsList[1] += len(remissionFeatures)
+
+			class1Acc = sess.run(accuracy, feed_dict= {x: np.array(remissionFeatures).reshape(-1, self.n_chunks, self.chunk_size), self.y: remissionClassification})
+			class0Acc =  sess.run(accuracy, feed_dict= {x: np.array(noneFeatures).reshape(-1, self.n_chunks, self.chunk_size), self.y: noneClassification})
+
+			self.classificationsList[2] += len(noneFeatures)*class0Acc
+			self.classificationsList[3] += len(remissionFeatures)*class1Acc
+
+			print "current class 1 accuracy is: ", class1Acc
+			print "current class 0 accuracy is: ", class0Acc
 
 
 		self.loss = []
-		prediction = self.recurrent_neural_network(x)
-		print prediction
 		cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(prediction, self.y))
 
 		correct_pred = tf.equal(tf.argmax(prediction,1), tf.argmax(self.y,1))
@@ -97,8 +133,6 @@ class runLSTM:
 
 
 		optimizer = tf.train.AdamOptimizer(learning_rate = self.learning_rate).minimize(cost)
-
-
 
 		with tf.Session() as sess:
 			sess.run(tf.initialize_all_variables())
@@ -113,22 +147,17 @@ class runLSTM:
 					start = i
 					end = i + self.batch_size
 
-					# print "start is: ", start, " end is: ", end
-					batch_x = np.array([self.featureSet[start:end]])
-					batch_y = np.array(self.classifications[start:end])
-					# print batch_x.shape
-					# print np.array([self.featureSet]).shape
-					# print batch_y
-
+					batch_x = np.array([self.featureSet[start:end]]) #gets the features
+					batch_y = np.array(self.classifications[start:end]) #gets the classifications
 
 					batch_x = batch_x.reshape((self.batch_size, self.n_chunks, self.chunk_size))
+					# print "size of batch is: ", batch_x.shape
 
 
-					_,c = sess.run([optimizer, cost], feed_dict = {x: batch_x, self.y: batch_y})
+					_,c, acc = sess.run([optimizer, cost, accuracy], feed_dict = {x: batch_x, self.y: batch_y})
 					epoch_loss += c
 					i += self.batch_size
-					acc = sess.run(accuracy, feed_dict={self.x: batch_x, self.y: batch_y})
-
+					# acc = sess.run(accuracy, feed_dict={self.x: batch_x, self.y: batch_y})
 
 					if i + self.batch_size > len(self.featureSet) -4:
 						print "minibatch accuracy is: ", acc, " and loss is: ", c
@@ -146,11 +175,21 @@ class runLSTM:
 			test_neural_network()
 
 
-	def writeLoss(self):
+
+	def writeLoss(self, num_folds):
+		totalLoss = [sum([self.lossDict[i][j] for i in self.lossDict])/10 for j in range(len(self.lossDict[0]))]
+		print self.lossDict
 		filename = os.path.join(self.Dir, LOSS_FILE)
 		file = open(filename, 'w')
 		writer = csv.writer(file, quoting = csv.QUOTE_ALL)
-		writer.writerow(self.loss)
+		writer.writerow(totalLoss)
+
+		print totalLoss
+
+		print "Class 0 classification accuracy is: ", float(self.classificationsList[2])/self.classificationsList[0], " number correct is: ", self.classificationsList[2], " number total is: ", self.classificationsList[0]
+		print "Class 1 classification accuracy is: ", float(self.classificationsList[3])/self.classificationsList[1], " number correct is: ", self.classificationsList[3], " number total is: ", self.classificationsList[1]
+
+
 
 
 	def getActualClassification(self):

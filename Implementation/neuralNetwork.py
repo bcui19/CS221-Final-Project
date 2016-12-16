@@ -32,19 +32,13 @@ class neuralNet(svm.runSVM):
 	def runClassification(self, train, test, foldNum, train_index, test_index):
 		classificationTable = self.getActualClassification(train_index, False)
 
-		clf = MLPClassifier(solver = 'adam', activation = 'logistic', alpha = 1e-7, hidden_layer_sizes=(10,3), random_state = 1, max_iter = 10000, early_stopping = False)
+		clf = MLPClassifier(solver = 'lbfgs', activation = 'relu', alpha = 1e-5, hidden_layer_sizes=(7, 7, 7, 7), random_state = 1, max_iter = 10000)#, early_stopping = False)
 
 		clf.fit(train, classificationTable)
 
 		self.prediction = clf.predict(test)
 
 		self.getActualClassification(test_index, True)
-
-
-
-
-
-
 
 
 
