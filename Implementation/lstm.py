@@ -104,10 +104,10 @@ class runLSTM:
 	def train_neural_network(self, x, prediction):
 		def test_neural_network():
 
-			remissionFeatures = [featurePoint for i, featurePoint in enumerate(self.test) if self.classifications[i] == [1,0]]
-			remissionClassification = [classpoint for i, classpoint in enumerate(self.testGoal) if self.classifications[i] == [1,0]]
-			noneFeatures = [featurePoint for i, featurePoint in enumerate(self.test) if self.classifications[i] != [1,0]]
-			noneClassification = [featurePoint for i, featurePoint in enumerate(self.testGoal) if self.classifications[i] != [1,0]]
+			remissionFeatures = [featurePoint for i, featurePoint in enumerate(self.test) if self.testGoal[i] == [1,0]]
+			remissionClassification = [classpoint for i, classpoint in enumerate(self.testGoal) if self.testGoal[i] == [1,0]]
+			noneFeatures = [featurePoint for i, featurePoint in enumerate(self.test) if self.testGoal[i] != [1,0]]
+			noneClassification = [featurePoint for i, featurePoint in enumerate(self.testGoal) if self.testGoal[i] != [1,0]]
 
 			# print len(remissionFeatures)
 			# print len(noneFeatures)

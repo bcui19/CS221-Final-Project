@@ -35,30 +35,31 @@ Natalie Ng - nng1}
     \section{Background}
     Microarrays are a high throughput lab-on-a-chip technology that enable measurement of DNA, RNA, and protein levels. With recent advances in microarrays, it is possible to relatively easily get data on the expression of at least 20,000 genes simultaneously. This is a powerful tool in biological research, but one which we believe can be better used. 
     
-    In order to take advantage of the datasets provided by microarrays, we need to understand the performance of different analysis techniques on this data format. Typically, scientific labs use non-AI techniques to analyze microarrays. We hope to add AI techniques to the toolkit of analysis pipelines for microarray data. To do this, we hope to investigate the performance of various AI techniques on analyzing microarray data. 
+    In order to take advantage of the datasets provided by microarrays, we need to understand the performance of different analysis techniques on this data format. Typically, scientific labs use non-AI techniques to analyze microarrays. We hope to add AI techniques to the toolkit of analysis pipelines for microarray data. To do this, we plan to investigate the performance of various AI techniques on analyzing microarray data. 
     
     In order to perform this analysis, we need to first get datasets on which to run those AI techniques. In 2000, the National Center for Biotechnology Information established a public repository for the storage of high-throughput biological data called the Gene Expression Omnibus (GEO). To date, scientists have contributed over 4000 datasets with a total of over 2 million samples to GEO. The vast majority of this data was collected via microarrays. In our project, we have narrowed the scope by looking at datasets from GEO which measure cDNA expression levels using DNA microarrays. 
 
     \section{Task Definition}    
     To further narrow the scope of our project, we focus on the application of AI techniques for binary classification problems. After a quick skim of GEO, we notice that the vast majority of the datasets focused on binary classification problems are classifying with relation to cancer. Thus, our project focuses on binary classification problems in cancer research. These include classifying tissue between cancerous and benign, distinguishing patients between those that relapse and those that do not, and diagnosing cancer from circulating blood cells. 
     \subsection{Baseline and Oracle}
-Our baseline is an implementation of K Nearest Neighbors. Our oracle is the false positive and false negative rates of current FDA approved cancer screens. Most of these screens range from 5\% to 20\% false positive rates, and 5\% to 10\% false negative rates. 
+Our baseline is an implementation of K Nearest Neighbors. Our oracle is the false positive and false negative rates of current FDA approved cancer screens. Most of these screens range from 5\% to 20\% false positive rates, and 5\% to 10\% false negative rates. Our baseline yields a 0\% false negative rate and a 100\% false positive rate when we attempt the same cancer detection problem (using the GSE16449 dataset). 
+
     \section{Literature Review}
-    Current confirms the need for a comparative study of AI techniques in cancer classification problems. In 2006, JA Cruz et. al. report that preliminary machine learning techniques for cancer classification problems improves prediction accuracy by 10-15\% compared to traditional statistical methods. Thus, by gaining a deeper understanding of the benefits and drawbacks of different techniques, we can improve the accuracy of AI techniques by a higher margin.
+    A literature review confirms the need for a comparative study of AI techniques in cancer classification problems. J.A. Cruz et. al. report that preliminary machine learning techniques for cancer classification problems improves prediction accuracy by 10-15\% compared to traditional statistical methods (2006). Thus, by gaining a deeper understanding of the benefits and drawbacks of different techniques, we can continue to improve the accuracy of the AI techniques used by researchers.
     
-    In 2015, K.Korou et. al. reports that machine learning techniques have been used for binary classification problems related to cancer, but additional validation of these techniques is needed. Our project provides a first step in the validation of such techniques in DNA microarray data.
+    K. Korou et. al. reports that machine learning techniques have been used for binary classification problems related to cancer, but additional validation of these techniques is needed (2015). Our project provides a first step in the validation of such techniques in DNA microarray data.
     \section{Infrastructure}
     We collect our datasets from the Gene Expression Omnibus. These datasets are typically annotated with a chip-specific probe name for a particular gene. We convert these probe names to universal gene names to enable comparison between different datasets. 
     \subsection{Datasets}
     \subsubsection{GSE16449}
     This dataset contains 70 individuals with 34,731 gene expressions each. In addition, the dataset contains information of whether the sample comes from cancerous or benign kidney tissue. We use this dataset for the binary classification problem of cancerous versus benign.
     \subsubsection{GSE13576}
-    This dataset contains 196 patients with 55,670 gene expressions each. In addition, the dataset contains information of whether the . We use this dataset for the binary classification problem of cancerous versus benign.
+    This dataset contains 196 patients with 55,670 gene expressions each. In addition, the dataset contains information on whether that patient relapsed or not. We use this dataset for the binary classification problem of predicting whether the patient will relapse. 
 
     \subsection{Normalization}
-Microarray data has variation in the amount of each sample inputted into the chip. This leads to a systematic error where one sample has greater expression across all the genes. Thus, we apply a normalization step to each sample. To do this, we sum the expression of the genes for each sample. We then divide each expression by this sum. This scales all the samples to have the same total expression, reducing  noise in the experiment.
+Microarray data has variation in the amount of each sample inputted into the chip. This leads to a systematic error where one sample has greater expression across all the genes. Thus, we apply a normalization step to each sample. To do this, we sum the expression of the genes for each sample. We then divide each expression by this sum. This process scales all the samples so that they will have the same total expression, reducing  noise in the experiment.
     \section{Methods}
-    Our methodology consists of running K Nearest Neighbors (KNN) for our baseline and then we implement logistic regression, stochastic gradient descent (SGD), support vector machines (SVMs), Multi-layer neural networks, and Long Short Term Memory (LSTMs).
+    Our methodology consists of running K Nearest Neighbors (KNN) for our baseline and then running logistic regression, stochastic gradient descent (SGD), support vector machines (SVMs), Multi-layer neural networks, and Long Short Term Memory (LSTMs) in order to evaluate relative accuracy on each dataset.
     
     When training all models, we run 10-fold cross validation. We present the testing error for all such samples. 
 
@@ -67,46 +68,56 @@ Microarray data has variation in the amount of each sample inputted into the chi
     We run 5-NN on our dataset with the KNN package from scikit-learn. We run the algorithm with a ball tree in order to get around deficiencies in KD-trees and brute force distances. 
     
     \subsubsection*{5.1.2 Logistic Regression}
-    For our project we use logistic regression as the baseline for our projection. The logistic regression implementation is performed with the class weight flag turned onto 'balanced'. Thus the weight that each class adds in training is multiplied by the following constant:
+    We run logistic regression from scikit-learn, but with the class weight flag turned onto 'balanced'. Thus the weight that each sample adds in training is multiplied by the following constant:
     
-    $$\frac{\textrm{num samples}}{\textrm{num classInstances}}$$
+    $$\frac{\textrm{total num samples}}{\textrm{num samples of this class}}$$
     
-    Thus the weights within logistic regression are adjusted inversely proportional to the class frequencies. Overall, this allows for better classification, particularly with our datasets that are biased towards non-cancerous samples. 
+    This means that the weights within logistic regression are adjusted to a degree inversely proportional to the class frequencies during training. Specifically, the weights are adjusted more for samples of the rarer class. Since some of the datasets we consider have considerably more samples of one class (e.g. most samples are non-cancerous), this improves classification performance.
+    
     \subsubsection*{5.1.3 Support Vector Machines SVMs}
-    We apply SVMs from the sklearn package with the same flag as in logistic regression, where every class was weighted by multiplying it by the constant
+    We apply SVMs from the scikit-learn package with the same flag as in logistic regression, where every class was weighted by multiplying it by the constant
     
-    $$\frac{\textrm{num samples}}{\textrm{num classInstances}}$$
+    $$\frac{\textrm{num samples}}{\textrm{num samples of this class}}$$
     
     \subsubsection*{5.1.4 Stochastic Gradient Descent}
     We also use stochastic gradient descent as a means to classify the datasets. Our implementation utilizes hinge loss, an elasticnet penalty, and a balanced class weight. The elasticnet parameter serves to try to optimize the combination of $l1$ and $l2$ as follows:
     
     $$(1-l1ratio)*L2 +l1ratio*L1$$
     
-    where the $l1ratio$ is an initialized input constant that defaults to $0.15$ and $L1$ represents the $L1$ norm and $L2$ represents the $L2$ norm. In general we choose to use elastic net in order to try to reduce the number of features, since if we were to just use L1 as the penalty then it'd drive nearly all of the parameters to $0$, giving us a sparse solution. Thus, with elastic net we try to get a set of solutions that isn't sparse.
+    where the $l1ratio$ is an initialized input constant that defaults to $0.15$, $L1$ represents the $L1$ norm, and $L2$ represents the $L2$ norm. In general we choose to use elastic net in order to try to reduce the number of features, since if we were to just use L1 as the penalty, that would drive nearly all of the parameters to $0$, giving us a sparse solution. Thus, with elastic net we try to get a set of solutions that isn't sparse.
     
-    \subsection{Tensor Flow}
-    fill me in (Brandon)
-
+    \subsubsection{Neural Networks}
+    Additionally, we choose to apply neural networks to classify our data. Our implementation uses lbfgs algorithm which approximates Newton's method for weights that will be updated using backpropagation. The model also utilizes relu as the activation function. The neural network was a 4-hidden layer neural network with 7 hidden neurons per a layer. 
+    
+    
+    \subsection{Tensor Flow: LSTM}
+    We also implement a long short-term memory(LSTM) recurrent neural network (RNN). For our RNN our batch size is 3 and for each iteration of training we train over 31 timesteps, our embedding size is 19, and the RNN has 128 hidden units. 
+ 
     \subsection{Preprocessing}
-We notice that our data has a high feature to sample ratio. We test the efficacy of a preprocessing step in minimizing overfitting and improving runtime efficiency. Our preprocessing step includes an initial filtration of data to restrict model training to important features that likely have biological relevance. We implement the following two filtration techniques.
+We notice that our data has a high feature to sample ratio. Consequently, we attempt to preprocess the data in order to minimize overfitting and improve runtime. Through preprocessing, we attempt to filter the data to restrict model training to features that are likely to have biological relevance. We implement the following two filtration techniques.
 
     \subsubsection{Differential Expression}
 We only include genes that are differentially expressed between the two classifications. We test for significance using a Welch t-test in the sci-py package with a significance cutoff of 0.01. 
     \subsubsection{Fold Change}
 We ensure a minimum fold-change of 5. We tested different amounts of fold change and settled on a number that would enable us to retain approximately 10\% of the features in model training.
 
+    \subsubsection{Resampling the dataset}
+    Our datasets are both imbalanced, as a result we created new datasets to work on by resampling the datasets. We did this in two ways, by undersampling the dataset, thus removing some of the negative classifications or by oversampling by duplicating the positive classifications until we reached a balance between the positive and negative classifications. 
+
+
     \section{Results}
     \subsection{GSE16449: Kidney Cancer Prediction}
-    We begin by attempting a binary classification problem between cancerous and benign kidney tissue. 
+    As described earlier, we first attempt binary classification between cancerous and benign kidney tissue. 
     \subsubsection{Prediction Accuracy}
     The results below are when running our 5-NN algorithm on the Kidney Cancer dataset (table 1):
    \begin{center}
+        
    \begin{tabular}{c|c|c|c}
    \hline
    & Correctly Predicted & Actual & Percent\\
    \hline
    Cancerous & 18 & 18 & 100\\
-   Benign & 52 & 52 & 0\\
+   Benign & 0 & 52 & 0\\
    \hline
    \end{tabular}\\
    \vspace{0.1in}
@@ -116,6 +127,7 @@ We ensure a minimum fold-change of 5. We tested different amounts of fold change
     We present the results when running logistic regression on the Kidney Cancer dataset (table 2):
     
     \begin{center}
+        
     \begin{tabular}{c|c|c|c}
     \hline
     & Correctly Predicted & Actual & Percent\\
@@ -140,10 +152,11 @@ We ensure a minimum fold-change of 5. We tested different amounts of fold change
     \hline
     \end{tabular}\\
     \vspace{0.1in}
+    
     \textbf{Table 3: SVM without Filtration}
     \end{center}
     
-    We present the results when running 5-NN, Logistic Regression, and SVM on the filtered datasets below:
+    Finally, we present the results when running 5-NN, Logistic Regression, and SVM on the filtered datasets below:
     
     \begin{center}
     \begin{tabular}{c|c|c|c}
@@ -195,26 +208,37 @@ We ensure a minimum fold-change of 5. We tested different amounts of fold change
     \textbf{Figure 1: Runtimes for Different methods on the GSE16449 Dataset}
     \end{center}
     
-    \subsubsection{Preliminary Error Analysis}
+    \subsubsection{Error Analysis}
     We realized that perhaps the classification problem of cancerous versus benign is too trivial. This makes it very difficult to compare the results from different AI techniques, as all techniques will perform reasonably well. We also realize that our dataset does not contain enough samples to do proper training and validation of the model. Thus, in later analysis, we choose harder classification problems with larger datasets.
     
     \subsection{GSE13576: Relapse Prediction Dataset}
-    We choose a different dataset with the aim of tackling a harder classification problem. With this dataset we attempt to analyze whether or not a series of genes will lead to relapse in cancer. For this we filtered with two different cutoffs, fold change = 5 and fold change = 10, this resulted in 2444 and 557 genes, respectively. 
+    We choose a different dataset with the aim of tackling a harder classification problem. With this dataset we attempt to analyze whether or not a series of genes will lead to relapse in cancer. For this we filtered with two different cutoffs, fold change = 5 and fold change = 10, this resulted in 2444 and 557 genes, respectively. Additionally, when we oversample the data we copy the data points that lead to remission leading to 161 data points that lead to relapse and 165 data points that do not, while when we undersample we cut out a lot of the non-remission samples giving us 58 data points that do not lead to relapse and 57 data points that lead to relapse. 
     
     \subsubsection{Results}    
     \begin{center}
-    \includegraphics[width = 5in]{classificationRemissionHeavilyFiltered}\\
+    \includegraphics[width = 5in]{classificationNeuralNets}\\
     \textbf{Figure 2: Classification Accuracy}
     \end{center}
    
-    From the classification results we notice that the filtration of features helps us ensure that the classifier does not classify everything as relapse (Figure 2). Additionally, we notice that an SVM in both the unfiltered and the filtered case enables the balance of false positive and false negative rates. However, we also note that when we ran the machine learning algorithms on an  more heavily filtered dataset that the results didn't improve significantly; we did notice that we got a slight increase in the true negative rate and a slight decrease in the true positive rate. Thus, we conclude that there is an asymptotic ceiling to the benefits of filtering. 
-   
+    From the classification results we notice that the filtration of features helps us ensure that the classifier does not classify everything as relapse (Figure 2). We further notice that by over or under sampling we can further improve our results, since we would be working with a balanced dataset. However, we also note that when we ran machine learning algorithms on a more heavily filtered dataset that the results didn't improve significantly; we did notice that we got a slight increase in the true negative rate and a slight decrease in the true positive rate. Thus, we conclude that there is an asymptotic ceiling to the benefits of filtering. Lastly, we note that an LSTM on the oversampled dataset produces the best results with nearly perfect classification for relapse and non-relapse. 
+    
+    \subsubsection{LSTM Loss Over Time}
+    We present the average loss per a fold over epochs in the LSTM below (figure 3):
+    
+    \begin{center}
+    \includegraphics[width = 5in]{LSTM_Loss}\\
+    \textbf{Figure 3: LSTM Loss Over Epoch}
+    \end{center}
+    
+    We notice that even after just a few epochs the loss drastically increases. Additionally, when oversampling data the loss starts to drop lower than when undersampling the data. 
+    
+       
     \subsubsection{Runtime}
-    We observe that the runtimes (Figure 3) for the algorithms on the same-sized dataset lie within one order of magnitude. However, when we compare between the datasets, we notice that the unfiltered dataset performs at  an order of magnitude worse than the filtered dataset. Thus, filtration provides an additional benefit of increased runtime efficiency.
+    We observe that the runtimes (Figure 4) for the algorithms on the same-sized dataset lie within one order of magnitude. However, when we compare between the datasets, we notice that the unfiltered dataset performs at  an order of magnitude worse than the filtered dataset. Thus, filtration provides an additional benefit of increased runtime efficiency.
     
     \begin{center}
     \includegraphics[width = 5in]{runTimeRemission}\\
-    \textbf{Figure 3: Runtimes for different methods on the GSE 13576 Dataset}
+    \textbf{Figure 4: Runtimes for different methods on the GSE 13576 Dataset}
     \end{center}
     
     
@@ -226,6 +250,14 @@ We ensure a minimum fold-change of 5. We tested different amounts of fold change
     \hline
     method & precision & recall\\
     \hline
+    LSTM - Oversampling & 0.9415 & 1\\
+    LSTM - Undersampling & 0.6436 & 0.9824\\
+    Neural net - Oversampling & 0.8229 & 0.98136\\
+    Neural net - Undersampling & 0.7222 & 0.91228\\
+    SVM - Oversampling & 0.8157 & 0.9627\\
+    SVM - Undersampling & 0.7 & 0.8596\\
+    LogReg - Oversampling & 0.8743 & 0.9937\\
+    LogReg - Undersampling & 0.71798& 0.9824\\
     SVM - heavily filtered & 0.4 & 0.8125\\
     SGD - heavily filtered & 0.339285714 & 0.59375\\
     Logistic Regression - heavily filtered & 0.5 & 0.59375\\
@@ -245,27 +277,23 @@ We ensure a minimum fold-change of 5. We tested different amounts of fold change
     \textbf{Table 7: Precision and Recall for various methodologies}  
     \end{center}
     
-    We notice that for all the AI techniques, the precision of the test is quite poor. This signifies that our methods declare a large number of non-relapse samples as likely to develop relapse. For the purposes of a diagnostic test, and assuming a tradeoff between false positive and false negative rates, the current situation is better than the alternative, where false negatives are far more troublesome than false positives. Additionally, we notice that filtration provides an improvement on both precision and recall, signifying the importance of using genes that are likely to have biological relevance. We also notice that SVM methods provide the best recall.
+    We notice that for all the AI techniques, the precision of the test is quite poor. This signifies that our methods declare a large number of non-relapse samples as likely to develop relapse. For the purposes of a diagnostic test, and assuming a tradeoff between false positive and false negative rates, the current situation is better than the alternative, given that false negatives are far more troublesome than false positives. Also, this intuitively makes sense, because if our methods are finding genetic indicators of relapse, those indicators won't manifest themselves in all cases. Additionally, we notice that filtration provides an improvement on both precision and recall, signifying the importance of using genes that are likely to have biological relevance and reducing the set of features in our model. We also notice that SVM methods provide the best recall.
     
-    To better gauge the tradeoff between false positive and false negative rates for each technique, we calculate the F1 score (Figure 4).
+    To better gauge the tradeoff between false positive and false negative rates for each technique, we calculate the F1 score (Figure 5).
     
     \begin{center}
-    \includegraphics[width = 5in]{F1_Scores}\\
-    \textbf{Figure 4: F1 scores for various methodologies}
+    \includegraphics[width = 5in]{F1Scores}\\
+    \textbf{Figure 5: F1 scores for various methodologies}
     \end{center}
 
     Based upon the F1 scores, we know that running an SVM with the heavily filtered dataset we will get the best results in terms of F1 scores. Additionally, in general we notice that an SVM will consistently produce similar F1 scores. 
 
 
     \section{Error Analysis}
-    From the results, we notice that our baseline consistently does the worst. This is sensible since KNN performance suffers because of the curse of dimensionality. Our implementation of stochastic gradient descent attempts to further reduce our feature space by using elastic net. However, with our implementation of SGD we didn't normalize the features to -1, 1 rather they are some float representing the weight of a feature, and because SGD is sensitive to feature scaling, we believe that there is a possible intrinsic issue. Additionally, SGD is generally trained on a much larger dataset, and since we use a very small training set it is very hard to fit a good model using SGD. \\
-    
-    We notice that the F1 score for logistic regression is the best on the filtered dataset. Since the difference between the two models is that logistic regression tries to create a probabilistic model, while SVMs attempt to create a hyperplane that maximizes the margin between the two classes, then because the SVM is operating in a high dimensional space and we are working with very little training data that the SVM can overfit more than logistic regression on the filtered data set. However, when we further try to reduce the noise with the heavily filtered dataset we are able to achieve similar F1 values for logistic regression and SVM. Overall, we believe that one way to improve our results would be to add more training data to try to reduce overfitting, but also we notice that by reducing the dimensionality of the data we already receive drastic improvements in the F1 score since we are statistically removing noise from our dataset. 
-    
-    
+    From the results, we notice that our baseline consistently does the worst. This is sensible since KNN performance suffers due to dimensionality. Our implementation of stochastic gradient descent attempts to further reduce our feature space by using elastic net. However, with our implementation of SGD we didn't normalize the features to -1, 1 rather they are some float representing the weight of a feature, and because SGD is sensitive to feature scaling, we believe that there is a possible intrinsic issue. Additionally, SGD is generally trained on a much larger dataset, and since we use a very small training set it is very hard to fit a good model using SGD. \\
 
-    
-    
+    We notice that the F1 score is the best for LSTMs. We attribute this to the fact that there could be possible interactions between the genes that are accounted for within the LSTM. Additionally, since LSTMs are hard to train on such small datasets, it is sensible that the performance of the LSTM suffered when undersampling the dataset. However, we also note that in general when oversamlping the data, we get better results. This is sensible because we are trying to resolve the issue of class imbalance between the relapse and non-relapse data points. Lastly, we'd like to point out that logistic regression still does well when oversampling the data, which indicates that it is not always necessary to use complex models such as LSTMs. 
+       
     \begin{thebibliography}{9}
 
 \bibitem{obnibus}
