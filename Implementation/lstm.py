@@ -33,21 +33,18 @@ class runLSTM:
 		self.classifications = self.getActualClassification()
 		self.prepData()
 
-
+		#initializes the LSTM
 		self.initLSTM()
 		self.runClassification(10)
 		self.writeLoss(10)
-
-
-
 
 	def initLSTM(self):
 		self.num_Epochs = 50 # number of training iterations
 		self.n_classes = 2 #number of possible classifications
 		self.batch_size = 3 #pushing one training point through at a time
 		self.chunk_size = len(self.featureSet[0])/31
-		self.n_chunks = 31
-		self.rnn_size = 128
+		self.n_chunks = 31 #number of timesteps 
+		self.rnn_size = 128 #Number of hidden layers
 		self.learning_rate = 0.001
 
 		self.x = tf.placeholder('float', [None, self.n_chunks, self.chunk_size])
@@ -77,9 +74,7 @@ class runLSTM:
 
 			count += 1
 
-
-
-
+	#randomizes the data a little bit so the chunks end up in different locations
 	def prepData(self):
 		self.featureSet, self.classifications = shuffle(self.featureSet, self.classifications, random_state = 0)
 		print self.classifications

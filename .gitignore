@@ -3,6 +3,7 @@
 /Tutorial/
 /Writeup
 /Figures
+/Submission
 
 *.pyc
 *.xlsx
